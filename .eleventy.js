@@ -2,6 +2,7 @@
 const socialImages = require("@11tyrocks/eleventy-plugin-social-images");
 const syntaxHighlight = require("@11ty/eleventy-plugin-syntaxhighlight");
 const pluginRss = require("@11ty/eleventy-plugin-rss");
+const { DateTime } = require("luxon");
 
 // Helper packages
 const slugify = require("slugify");
@@ -25,6 +26,22 @@ module.exports = function (eleventyConfig) {
 
   eleventyConfig.addShortcode("year", () => `${new Date().getFullYear()}`);
   eleventyConfig.addShortcode("packageVersion", () => `v${packageVersion}`);
+
+  eleventyConfig.addFilter("sortByDate", (arr) => {
+    arr.sort((a, b) => new Date(b.data.date) - new Date(a.data.date));
+    return arr;
+  });
+
+  eleventyConfig.addFilter("readableDate", (dateObj) => {
+    return DateTime.fromJSDate(new Date(dateObj), { zone: "utc" }).toFormat("LLL dd, yyyy");
+  });
+
+  eleventyConfig.addFilter("readTime", (value) => {
+    const content = value;
+    const textOnly = content.replace(/(<([^>]+)>)/gi, "");
+    const readingSpeedPerMin = 450;
+    return Math.max(1, Math.floor(textOnly.length / readingSpeedPerMin));
+  });
 
   eleventyConfig.addFilter("slug", (str) => {
     if (!str) {
